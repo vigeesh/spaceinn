@@ -1,0 +1,226 @@
+:stem:
+= Fourier-Hankel/Legendre Pipeline
+Vigeesh Gangadharan
+v0.0.1, 28-11-2014
+
+:imagesdir: images
+
+== Introdcution
+
+== Installing
+
+== Workflow
+
+[.text-center]
+****
+hmi.v_45s + 
+↓ +
+`mtrack` +
+↓ +
+hmi_fldvtrack +
+↓ +
+`tld` +
+↓ + 
+hmi_tldcoeff +
+****
+
+.Example run
+[source,shell]
+----
+create_series kis_vigeesh.hmi_fldvtrack.jsd
+
+./mtrack in='hmi.v_45s[2010.06.01_00:00:00_TAI/8h]' out='kis_vigeesh.hmi_fldvtrack' \ 
+scale=0.125 lat="{0.}" lon="{200.}" map="carree" rows=400 cols=400 -n -v -o -r
+
+show_info kis_vigeesh.hmi_fldvtrack[2010.06.01_00:00:00_TAI] -P key=MidTime,LonHG,LatHG,Duration
+
+create_series kis_vigeesh.hmi_tldcoeff.jsd
+
+mpirun -np 9 tld in=kis_vigeesh.hmi_fldvtrack[2010.06.01_00:00_TAI][+200][0] \
+out=kis_vigeesh.hmi_tldcoeff m_abs=25 l_max=1000
+
+show_info kis_vigeesh.hmi_tldcoeff[2010.06.01_00:00_TAI] -P key=MidTime,LonHG,LatHG,Duration,lMax,mAbs
+
+create_series kis_vigeesh.hmi_fldcoeff.jsd
+
+./fld in=kis_vigeesh.hmi_tldcoeff[2010.06.01_00:00_TAI][+200][0] out=kis_vigeesh.hmi_fldcoeff
+
+show_info kis_vigeesh.hmi_fldcoeff[2010.06.01_00:00_TAI] -P key=MidTime,LonHG,LatHG,Duration,lMax,mAbs
+----
+'''
+
+
+
+=== 1. Mapping and Tracking - `mtrack`
+
+Each data set (e.g. Dopplergrams, Tracked cubes, SHT coefficients, etc.) is identified by a series in the DRMS (Data Record Management System).
+
+==== Create a new data series
+
+We start by createing a new data series in the DRMS that can hold the tracked cubes: latexmath:[V_z (\Theta,\Phi,t)]. 
+The data series is created using a series definition file, or a JSD file.
+A template is available under *kis_vigeesh.hmi_fldvtrack.jsd*. +
+
+To create a series that will hold the cube generated using mtrack:
+
+[source,shell]
+----
+create_series kis_vigeesh.hmi_fldvtrack.jsd
+----
+
+.Note:
+Unlike the usual pipeline data series, this definiton file does not specify the final pixel size and the time-length of the tracked data. This is set to be a variable.
+
+
+==== Track the region
+
+The next step is to track the desired region. The primary input to the module *mtrack* are the full-disk Dopplergrams available as the data series *hmi.v_45s*. 
+We need to pass the *lat* and *lon* arguments to specify the Heliographic Latitude (latexmath:[\Theta]) and Longitude(latexmath:[\Phi]) of the center of the region to be tracked. The *scale* argument sets the desired MapScale in degrees/pixel.
+The *rows* and *cols* are the total number of pixel-rows and columns of the final mapped region.
+The FLD part can only process _PlateCarree_ map projection currently, and so the *map* argument has to be set to '_carree_'. 
+The tracked output will be stored in the data series that we just defined.
+
+.Example
+To generate an untracked region (flag: *-n*) centered at latexmath:[(\Theta,\Phi)=(0,200)] sapnning 8 hours, with the line-of-sight component of observer velocity (flag: *-o*) and solar rotation (flag: *-r*) removed,
+
+[source,shell]
+----
+./mtrack in='hmi.v_45s[2010.06.01_00:00:00_TAI/8h]' out='kis_vigeesh.hmi_fldvtrack' \
+scale=0.125 lat="{0.}" lon="{200.}" map="carree" rows=400 cols=400 -n -v -o -r
+----
+
+There are several ways one can call *mtrack*. +
+To generate multiple sets of tracked regions, one can specify the *lat* and and *lon* as: + 
+`lat="{0.,10.,-10.}" lon="{200.}"` - maps centered at latexmath:[(\Theta,\Phi) = (-10.,200.) , (0.,200.), (+10.,200.)]. +
+`lat="{0.,10.,-10.}" lon="{200.,210.,195.}"` - maps centered at latexmath:[(\Theta,\Phi) = (0.,200.) , (10.,210.), (-10.,195.)] +
+`lat="{0.,10.,20.,30.,40.}" lon="{200.,210.,195.}"` - maps centered at latexmath:[(\Theta,\Phi) = (0.,200.) , (10.,210.), (20.,195.), (30.,195.), (40.,195.)]. +
+
+.Note:
+The current version of the *fld* can only process individual tracked cubes. +
+There is no correction/checking whether the latexmath:[\Phi] that is provided is out of the coverage, and hence the tracked output can be arrays of 'nan's.
+
+.TODO
+. Create average maps and include them.
+. Include Phil's rejection list.
+. Change the mapscale for both lat and lon.
+
+
+==== Look at the series
+
+The tracked cube is stored as fits file inside the DRMS - SUMS directory that can be viewed using the *show_info* command.
+
+[source,shell]
+----
+show_info kis_vigeesh.hmi_fldvtrack[2010.06.01_00:00:00_TAI/5m] -P key=MidTime,LonHG,LatHG,Duration
+----
+
+The essential keywords that will be used by the next modules are: +
+*_MidTime, LonHG, LatHG, Duration, Cadence, MapScale, MapProj, Width, Height_*
+ 
+'''
+
+=== 2. Legendre time series - `tld`
+
+==== Create a new data series
+
+A template is available under *kis_vigeesh.hmi_tldcoeff.jsd*. 
+
+----
+create_series kis_vigeesh.hmi_tldcoeff.jsd
+----
+
+An important thing to note here is that, unlike the other pipeline modules, the data format is set to 'generic' and the output file format is 'hdf5'.
+The reasons for this are the following.
+
+.Why generic file format
+. The number or _l_, _m_ are not predefined, since we need to have the flexibility in choosing these values at runtime.
+. To avoid storing multiple FITS files (latexmath:[A_{lm}, B_{lm}]) under the same data record.
+. Writing in parallel is not yet supported for FITS file (AFAIK), which would generate again multiple files for each coefficients depending on the number of processors used under the same data record.
+. We can get away with the _meat-grinder_, as we now have access to hyperslabs of data. 
+
+
+==== Do the *tld*
+
+The input series is the tracked data cube from the *mtrack*. The Mapscale and other quatities are automatically passed on from the input series. The user provides the maximum _l_ and the absolute maximum _m_ that is desired. Presently, the code can only process individual sets of (latexmath:[\Theta,\Phi]) as follows. 
+
+----
+mpirun -np 3 tld in=kis_vigeesh.hmi_fldvtrack[2010.06.01_00:00_TAI][+200][0] out=kis_vigeesh.hmi_tldcoeff m_abs=25 l_max=1000
+----
+
+.The code runs as follows:
+. The master divides the whole data into chunks along the time axis, the number of chunks depend upon the number of processors assigned using the *-np*.
+. The master processor opens an hdf5 container file in the local directory and adds in the latexmath:[A_{lm}] and latexmath:[B_{lm}] data spaces to the */lmg* group.
+. Each processor then fills in the hdf5 file at the specific location of their respective chunk with transformed complex values of latexmath:[A_{lm}] and latexmath:[B_{lm}].
+. Finally the attributes are added to the hdf5 and the file is assigned to the data series where it gets its own SUMS location.
+
+
+.TODO
+. Process multiple sets of data as with *mtrack*
+. Test on other users/machines
+. Profiling: The code takes a lot of time: Maps=640, l_max=1000, m_abs=25 takes 30 minutes with 9 processors. i.e. 4 hours (252 minutes) on a single processor (mainly the IO time)
+
+
+==== Look at the series
+
+----
+show_info kis_vigeesh.hmi_tldcoeff[2010.06.01_00:00_TAI] -P key=MidTime,LonHG,LatHG,Duration,lMax,mAbs
+----
+
+The file can be viewd using *hdfview* command-line tool.
+Apart from the other keywords that are propagated from the *mtrack* module, +
+*_MidTime, LonHG, LatHG, Duration, Cadence, MapScale, MapProj, Width, Height_* +
+the data series aquires two new keywords as defined below. +
+
+.Aquired Keywords
+|====
+|Keyword | Datatype | Purpose
+
+|*_lMax_* | int | Maximum _l_ (_l_=0, _l~max~_)
+|*_mAbs_* | int | Absolute of the maximum _m_ (_m_= -_m~abs~_, _m~abs~_)
+|====
+
+These keywords are then used by the next module without the need for specifying it at runtime.
+
+'''
+
+== Analysis
+
+=== 1. Reading the file
+
+Say we have the file
+
+----
+/SUMS/SUM2/D76331/S00000/freq_lmg.h5
+----
+
+==== IDL
+
+----
+file = '/SUMS/SUM4/D81848/S00000/freq_lmg.h5'
+file_id = H5F_OPEN(file)
+dataset_Alm = H5D_OPEN(file_id,'/lmg/Alm')
+a = H5D_READ(dataset_Alm)
+dataset_Blm = H5D_OPEN(file_id,'/lmg/Blm')
+b = H5D_READ(dataset_Blm)
+alm = complex(a.real,a.imaginary)
+blm = complex(b.real,b.imaginary)
+----
+
+==== Python
+
+[source,python]
+----
+import h5py
+f = h5py.File('/SUMS/SUM2/D76331/S00000/freq_lmg.h5',"r")
+a=f['/lmg/Alm']
+b=f['/lmg/Blm']
+alm=a['real']+ 1j * a['imaginary']
+blm=b['real'] + 1j * b['imaginary']
+
+plot(alm[0,2,:]['real'])
+
+----
+
+=== 2. Example
+
+
