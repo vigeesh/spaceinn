@@ -5,9 +5,11 @@ v0.0.1, 28-11-2014
 
 :imagesdir: images
 
-== Introdcution
+== Introduction
 
 == Installing
+
+
 
 == Workflow
 
@@ -63,7 +65,7 @@ A template is available under *kis_vigeesh.hmi_fldvtrack.jsd*. +
 
 To create a series that will hold the cube generated using mtrack:
 
-[source,shell]
+[small, source,shell]
 ----
 create_series kis_vigeesh.hmi_fldvtrack.jsd
 ----
