@@ -65,9 +65,9 @@ A template is available under *kis_vigeesh.hmi_fldvtrack.jsd*. +
 
 To create a series that will hold the cube generated using mtrack:
 
-[small, source,shell]
+[source,shell]
 ----
-create_series kis_vigeesh.hmi_fldvtrack.jsd
+[small] create_series kis_vigeesh.hmi_fldvtrack.jsd
 ----
 
 .Note:
