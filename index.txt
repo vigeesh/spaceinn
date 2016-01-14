@@ -7,8 +7,21 @@ v0.0.1, 28-11-2014
 
 == Introduction
 
+This document provides a description of the
+Fourier-Hankel/Legendre module on the SDO JSOC data-analysis
+pipeline.
+
 == Installing
 
+Extract the archive to the local directory. 
+Edit the Makefile with the appropriate paths to CFITSIO, HDF5 (requires hdf5-1.8.14 compiled with the *--enable-parallel* option), PostgreSQL, and DRMS libraries.
+
+[source,shell]
+----
+make
+----
+
+Make produces three executables: postel_remap, tld, fld.
 
 
 == Workflow
@@ -59,7 +72,7 @@ Each data set (e.g. Dopplergrams, Tracked cubes, SHT coefficients, etc.) is iden
 
 ==== Create a new data series
 
-We start by createing a new data series in the DRMS that can hold the tracked cubes: latexmath:[V_z (\Theta,\Phi,t)]. 
+We start by creating a new data series in the DRMS that can hold the tracked cubes: latexmath:[V_z (\Theta,\Phi,t)]. 
 The data series is created using a series definition file, or a JSD file.
 A template is available under *kis_vigeesh.hmi_fldvtrack.jsd*. +
 
@@ -67,7 +80,7 @@ To create a series that will hold the cube generated using mtrack:
 
 [source,shell]
 ----
-[small] create_series kis_vigeesh.hmi_fldvtrack.jsd
+create_series kis_vigeesh.hmi_fldvtrack.jsd
 ----
 
 .Note:
