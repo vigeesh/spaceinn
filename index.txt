@@ -124,12 +124,6 @@ To generate multiple sets of tracked regions, one can specify the *lat* and and 
 The current version of the *fld* can only process individual tracked cubes. +
 There is no correction/checking whether the latexmath:[\Phi] that is provided is out of the coverage, and hence the tracked output can be arrays of 'nan's.
 
-.TODO
-. Create average maps and include them.
-. Include Phil's rejection list.
-. Change the mapscale for both lat and lon.
-
-
 ==== Look at the series
 
 The tracked cube is stored as fits file inside the DRMS - SUMS directory that can be viewed using the *show_info* command.
@@ -178,11 +172,6 @@ mpirun -np 3 tld in=kis_vigeesh.hmi_fldvtrack[2010.06.01_00:00_TAI][+200][0] out
 . Each processor then fills in the hdf5 file at the specific location of their respective chunk with transformed complex values of latexmath:[A_{lm}] and latexmath:[B_{lm}].
 . Finally the attributes are added to the hdf5 and the file is assigned to the data series where it gets its own SUMS location.
 
-
-.TODO
-. Process multiple sets of data as with *mtrack*
-. Test on other users/machines
-. Profiling: The code takes a lot of time: Maps=640, l_max=1000, m_abs=25 takes 30 minutes with 9 processors. i.e. 4 hours (252 minutes) on a single processor (mainly the IO time)
 
 
 ==== Look at the series

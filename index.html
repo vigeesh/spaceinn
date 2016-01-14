@@ -879,20 +879,6 @@ To generate multiple sets of tracked regions, one can specify the <strong>lat</s
 <p>The current version of the <strong>fld</strong> can only process individual tracked cubes.<br>
 There is no correction/checking whether the \(\Phi\) that is provided is out of the coverage, and hence the tracked output can be arrays of 'nan&#8217;s.</p>
 </div>
-<div class="olist arabic">
-<div class="title">TODO</div>
-<ol class="arabic">
-<li>
-<p>Create average maps and include them.</p>
-</li>
-<li>
-<p>Include Phil&#8217;s rejection list.</p>
-</li>
-<li>
-<p>Change the mapscale for both lat and lon.</p>
-</li>
-</ol>
-</div>
 </div>
 <div class="sect3">
 <h4 id="_look_at_the_series">Look at the series</h4>
@@ -969,20 +955,6 @@ The reasons for this are the following.</p>
 </li>
 <li>
 <p>Finally the attributes are added to the hdf5 and the file is assigned to the data series where it gets its own SUMS location.</p>
-</li>
-</ol>
-</div>
-<div class="olist arabic">
-<div class="title">TODO</div>
-<ol class="arabic">
-<li>
-<p>Process multiple sets of data as with <strong>mtrack</strong></p>
-</li>
-<li>
-<p>Test on other users/machines</p>
-</li>
-<li>
-<p>Profiling: The code takes a lot of time: Maps=640, l_max=1000, m_abs=25 takes 30 minutes with 9 processors. i.e. 4 hours (252 minutes) on a single processor (mainly the IO time)</p>
 </li>
 </ol>
 </div>
@@ -1088,7 +1060,7 @@ plot(alm[0,2,:]['real'])</code></pre>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-01-14 17:45:21 CET
+Last updated 2016-01-14 17:50:46 CET
 </div>
 </div>
 </body>
