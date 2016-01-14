@@ -1,0 +1,59 @@
+#=====General Series Information=====
+Seriesname:      	kis_vigeesh.hmi_tldcoeff
+Author:          	"Vigeesh"
+Owner:           	vigeesh
+Unitsize:        	32
+Archive:         	0
+Retention:       	21
+Tapegroup:       	1
+PrimeKeys:       	MidTime, LonHG, LatHG,LonCM
+DBIndex:         	MidTime, LonHG, LatHG
+Description:     	"LD time series"
+
+#=====Links=====
+
+#=====Keywords=====
+Keyword:MidTime, time, ts_eq, record, -4712.01.01_11:59_TAI, "-1", "TAI", "Midpoint of tracking interval for AR"
+Keyword:LonHG, float, slot, record,  +nan, "%+05.1f", "deg", "Longitude of tracked region center"
+Keyword:LatHG, float, slot, record, +nan, "%+03.0f", "deg", "Latitude of tracked region center"
+Keyword:LonCM, float, slot, record, +nan, "%+03.0f", "deg", "CM (Stonyhurst) Longitude of region center at MidTime"
+Keyword:CarrRot, int, variable, record, -1, "%d", "NA", "Carrington rotation at MidTime"
+Keyword:CMLon, float, variable, record, 360.0, "%04.1f", "deg", "Longitude of central meridian at MidTime"
+Keyword:T_START, time, variable, record, -4712.01.01_11:59:28_TAI, "0", "TAI", "Start of tracking interval"
+Keyword:T_STOP, time, variable, record, -4712.01.01_11:59:28_TAI, "0", "TAI", "End of tracking interval"
+Keyword:BUNIT, string, constant, record, "m/s", "%s", "none", "BUNIT: physical units of data, m/s"
+Keyword:ORIGIN, string, constant, record, "SDO/JSOC-SDP", "%s", "none", "ORIGIN: location where file made"
+Keyword:CONTENT, string, constant, record, "DOPPLERGRAM", "%s", "none", "CONTENT: DOPPLERGRAM"
+Keyword:QUALITY, int, variable, record, 0x80000000, "0x%08x", "none", "Level 1.5 Quality word"
+Keyword:HISTORY, string, variable, record, "", "%s", "none", "processing history of data"
+Keyword:COMMENT, string, variable, record, "", "%s", "none", "commentary on the data"
+Keyword:BLD_VERS, string, variable, record, "", "%s", "none", "Code release build number of program that created this record"
+Keyword:Created, time, variable, record, -4712.01.01_11:59Z, "-1", "Z", "File creation time"
+Keyword:SOURCE, string, variable, record, "", "%s", "none", "level 1 filtergrams used to produce the observables"
+Keyword:DATAVALS, int, variable, record, -2147483648, "%d", "none", "Actual number of data values in images (pixels)"
+Keyword:MISSVALS, int, variable, record, -2147483648, "%d", "none", "Missing values: TOTVALS - DATAVALS"
+Keyword:CADENCE, float, constant, record, 45.0, "%.1f", "seconds", "repetition interval"
+Keyword:LonSpan, float, variable, record, nan, "%.1f", "deg", "Longitude span of tracking interval"
+Keyword:Coverage, float, variable, record, 0.0000, "%.4f", "NA", "Duty cycle (valid images/total frames)"
+Keyword:MapProj, string, constant, record, "PlateCarree", "%s", "NA", "Map projection"
+Keyword:MapScale, float, constant, record, 0.125, "%.3f", "deg/voxel", "Map scale"
+Keyword:Map_PA, float, constant, record, 0.0, "%.1f", "deg", "Position angle of Carrington north wrt axis 2"
+Keyword:Width, float, constant, record, 50, "%.2f", "deg", "Longitude extent of region (nominal)"
+Keyword:Height, float, constant, record, 50, "%.2f", "deg", "Latitude extent of region (nominal)"
+Keyword:Interp, string, constant, record, "Cubic Convolution", "%s", "NA", "Interpolation scheme"
+Keyword:Duration, float, variable, record, 0.0, "%.1f", "s", "Length of tracking interval"
+Keyword:lMax, int, variable, record, 0.0, "%d", "NA", "Maximum l (l=0,l_max)"
+Keyword:mAbs, int, variable, record, 0.0, "%d", "NA", "Absolute of the maximum m (m= -m_abs, m_abs)"
+Keyword:MidTime_epoch, time, constant, record, 2010.01.01_00_TAI, "-2", "TAI", "MidTime index base"
+Keyword:MidTime_step, double, constant, record, 1382400.000000, "%0f", "sec", "MidTime index step"
+Keyword:LonHG_base, float, constant, record, 0.0, "%.1f", "deg", "LonHG index base"
+Keyword:LonHG_step, float, constant, record, 1.0, "%.1f", "deg", "LonHG index step"
+Keyword:LatHG_base, float, constant, record, 90.0, "%.1f", "deg", "LatHG index base"
+Keyword:LatHG_step, float, constant, record, -1.0, "%.1f", "deg", "LatHG index step"
+Keyword:LonCM_base, float, constant, record, 0.0, "%.1f", "deg", "LonCM index base"
+Keyword:LonCM_step, float, constant, record, 1.0, "%.1f", "deg", "LonCM index step"
+
+#=====Segments=====
+Data: lmg, vardim, float,0, "m/s", generic,"", "FLD Coefficients"
+
+
