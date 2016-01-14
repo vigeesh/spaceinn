@@ -1,7 +1,6 @@
 :stem:
 = Fourier-Hankel/Legendre Pipeline
 Vigeesh Gangadharan
-v0.0.1, 28-11-2014
 
 :imagesdir: images
 
@@ -18,8 +17,19 @@ Edit the Makefile with the appropriate paths to CFITSIO, HDF5 (requires hdf5-1.8
 
 [source,shell]
 ----
+./configure
 make
 ----
+
+In case the libraries are not located in your default path.
+Configure it with the respective paths.
+
+[source,shell]
+----
+./configure --with-hdf5=<Path to the h5pcc executable> --with-cfitsio=<CFITSIO path> --with-drms=<DRMS Path>
+make
+----
+
 
 Make produces three executables: postel_remap, tld, fld.
 
