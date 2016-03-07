@@ -7,8 +7,8 @@ Vigeesh Gangadharan
 == Introduction
 
 This document provides a description of the
-Fourier-Hankel/Legendre module on the SDO JSOC data-analysis
-pipeline.
+Fourier-Hankel/Legendre module on the SDO/HMI JSOC data-analysis pipeline for 
+processing large sets of HMI data
 
 == Installing
 
@@ -35,6 +35,30 @@ Make produces three executables: postel_remap, tld, fld.
 
 
 == Workflow
+
+The Fourier-Legendre analysis are usually performed on small areas of the solar 
+surface to infer the average properties beneath the selected region. For instance, 
+to estimate the meridional flow as a function of latitude, rectangular patches 
+are extracted from the Dopplergrams in the North-South direction along a 
+specific longitude (usually the Stonyhurst φ = 0◦), centered at different 
+latitudes. The Fourier-Hankel/Legendre decomposition gives the amplitude of the 
+poleward and equatorward directed flow field. The difference in frequency between 
+these two oppositely directed components can be attributed to a Doppler shift 
+as a result of a flow in a particular direction. Assuming that the origin of this 
+flow is be due to the meridional circulation, the frequency shifts can be inverted 
+to get the magnitude of the meridional flow at different depths as a function of 
+latitudes. For sunspot seismology, annular regions are selected centered in the 
+spot and the decomposition gives the amplitude of the ingoing and outgoing waves 
+within this annulus. The absorption coefficients and scattering phase-shifts can 
+then be estimated from the amplitude of the two components. It should be noted that, 
+for the meridional flow measurements the center is fixed on one of the poles, 
+while in the case of sunspot it is the spot center. In both cases, the decomposition 
+is carried out on a equi-angluar grid and therefore the first step is to select 
+the region of interest and map it onto an appropriate grid. The Fourier-Hankel/Legendre 
+decomposition is then carried on this tracked/mapped cube.
+
+image::flow_chart3.png[Workflow]
+
 
 [.text-center]
 ****
