@@ -6,9 +6,37 @@ Vigeesh Gangadharan
 
 == Introduction
 
+Of the several techniques currently used in local helioseismology 
+(Ring- diagram analysis: Hill (1988); Time-distance analysis: Duvall et al. (1993); Acoustic holography: Lindsey & Braun (1998)), 
+the Fourier-Hankel spectral decomposition was one of the earliest techniques used 
+by helioseismologists to explore the subsurface regions of the Sun. It was first 
+employed by Braun et al. (1987), and later followed up by a series of work 
+(Braun et al., 1988; Braun & Duvall, 1990; Braun et al., 1990, 1992) to study the 
+interaction of solar acoustic modes (p-modes) with isolated large scale magnetic 
+structures like sunspots. Sunspots are local discontinuities in the near surface 
+regions of the Sun. The p-modes sample these discontinuities and leave signature 
+of their interaction on the oscillation spectra. 
+Whereas, the spectra of the modes that have not encountered the sunspot remains 
+unaltered. Fourier- Hankel method can be used to separate these two wave fields. 
+This is done by decomposing the wave field into radially inward and outward 
+propagating waves on an annular region centered in the sunspot. Although, Hankel 
+functions are good approximations, later studies also explored this method with 
+the help of associated Legendre functions to account for the curvature of the 
+solar surface. The application of Fourier-Hankel/Legendre technique was later 
+extended to other helioseismic studies. Braun & Fan (1998) carried out meridional 
+flow measurements using this technique by decomposing the wavefield into equatorward 
+and poleward wavefields and measuring the frequency shifts between them.
+Further work carried out by Krieger et al. (2007) and Doerr et al. (2010) in this 
+direction have resulted in the development of a fast and efficient code for the 
+computation of Fourier-Hankel/Legendre transform which can be easily applied to a 
+large amount of data (Glogowski, 2011). Preliminary results for meridional flow 
+obtained from this work are comparable to the results obtained using ring- diagram 
+analysis.
+
+
 This document provides a description of the
 Fourier-Hankel/Legendre module on the SDO/HMI JSOC data-analysis pipeline for 
-processing large sets of HMI data
+processing HMI data. 
 
 == Installing
 
@@ -259,6 +287,14 @@ plot(alm[0,2,:]['real'])
 
 ----
 
-=== 2. Example
-
-
+== References
+Bogdan, T. J., Brown, T. M., Lites, B. W., & Thomas, J. H. 1993, ApJ, 406, 723 +
+Braun, D. C. & Duvall, Jr., T. L. 1990, Sol. Phys., 129, 83 +
+Braun, D. C., Duvall, Jr., T. L., & Labonte, B. J. 1987, ApJ, 319, L27 +
+Braun, D. C., Duvall, Jr., T. L., & Labonte, B. J. 1988, ApJ, 335, 1015 +
+Braun, D. C., Duvall, Jr., T. L., Labonte, B. J., Jefferies, S. M., Harvey, J. W., & Pomerantz, M. A. 1992, ApJ, 391, L113 +
+Braun, D. C. & Fan, Y. 1998, ApJ, 508, L105 +
+Braun, D. C., Labonte, B. J., & Duvall, Jr., T. L. 1990, ApJ, 354, 372 +
+Doerr, H.-P., Roth, M., Zaatri, A., Krieger, L., & Thompson, M. J. 2010, Astronomische Nachrichten, 331, 911 +
+Glogowski, K. 2011, Diploma Thesis. +
+Krieger, L., Roth, M., & von der Lu ̈he, O. 2007, Astronomische Nachrichten, 328, 252 +

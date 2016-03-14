@@ -732,9 +732,9 @@ MathJax.Hub.Config({
 <li><a href="#_analysis">Analysis</a>
 <ul class="sectlevel2">
 <li><a href="#_1_reading_the_file">1. Reading the file</a></li>
-<li><a href="#_2_example">2. Example</a></li>
 </ul>
 </li>
+<li><a href="#_references">References</a></li>
 </ul>
 </div>
 </div>
@@ -743,9 +743,37 @@ MathJax.Hub.Config({
 <h2 id="_introduction">Introduction</h2>
 <div class="sectionbody">
 <div class="paragraph">
+<p>Of the several techniques currently used in local helioseismology
+(Ring- diagram analysis: Hill (1988); Time-distance analysis: Duvall et al. (1993); Acoustic holography: Lindsey &amp; Braun (1998)),
+the Fourier-Hankel spectral decomposition was one of the earliest techniques used
+by helioseismologists to explore the subsurface regions of the Sun. It was first
+employed by Braun et al. (1987), and later followed up by a series of work
+(Braun et al., 1988; Braun &amp; Duvall, 1990; Braun et al., 1990, 1992) to study the
+interaction of solar acoustic modes (p-modes) with isolated large scale magnetic
+structures like sunspots. Sunspots are local discontinuities in the near surface
+regions of the Sun. The p-modes sample these discontinuities and leave signature
+of their interaction on the oscillation spectra.
+Whereas, the spectra of the modes that have not encountered the sunspot remains
+unaltered. Fourier- Hankel method can be used to separate these two wave fields.
+This is done by decomposing the wave field into radially inward and outward
+propagating waves on an annular region centered in the sunspot. Although, Hankel
+functions are good approximations, later studies also explored this method with
+the help of associated Legendre functions to account for the curvature of the
+solar surface. The application of Fourier-Hankel/Legendre technique was later
+extended to other helioseismic studies. Braun &amp; Fan (1998) carried out meridional
+flow measurements using this technique by decomposing the wavefield into equatorward
+and poleward wavefields and measuring the frequency shifts between them.
+Further work carried out by Krieger et al. (2007) and Doerr et al. (2010) in this
+direction have resulted in the development of a fast and efficient code for the
+computation of Fourier-Hankel/Legendre transform which can be easily applied to a
+large amount of data (Glogowski, 2011). Preliminary results for meridional flow
+obtained from this work are comparable to the results obtained using ring- diagram
+analysis.</p>
+</div>
+<div class="paragraph">
 <p>This document provides a description of the
 Fourier-Hankel/Legendre module on the SDO/HMI JSOC data-analysis pipeline for
-processing large sets of HMI data</p>
+processing HMI data.</p>
 </div>
 </div>
 </div>
@@ -1075,16 +1103,29 @@ plot(alm[0,2,:]['real'])</code></pre>
 </div>
 </div>
 </div>
-<div class="sect2">
-<h3 id="_2_example">2. Example</h3>
-
+</div>
+</div>
+<div class="sect1">
+<h2 id="_references">References</h2>
+<div class="sectionbody">
+<div class="paragraph">
+<p>Bogdan, T. J., Brown, T. M., Lites, B. W., &amp; Thomas, J. H. 1993, ApJ, 406, 723<br>
+Braun, D. C. &amp; Duvall, Jr., T. L. 1990, Sol. Phys., 129, 83<br>
+Braun, D. C., Duvall, Jr., T. L., &amp; Labonte, B. J. 1987, ApJ, 319, L27<br>
+Braun, D. C., Duvall, Jr., T. L., &amp; Labonte, B. J. 1988, ApJ, 335, 1015<br>
+Braun, D. C., Duvall, Jr., T. L., Labonte, B. J., Jefferies, S. M., Harvey, J. W., &amp; Pomerantz, M. A. 1992, ApJ, 391, L113<br>
+Braun, D. C. &amp; Fan, Y. 1998, ApJ, 508, L105<br>
+Braun, D. C., Labonte, B. J., &amp; Duvall, Jr., T. L. 1990, ApJ, 354, 372<br>
+Doerr, H.-P., Roth, M., Zaatri, A., Krieger, L., &amp; Thompson, M. J. 2010, Astronomische Nachrichten, 331, 911<br>
+Glogowski, K. 2011, Diploma Thesis.<br>
+Krieger, L., Roth, M., &amp; von der Lu ̈he, O. 2007, Astronomische Nachrichten, 328, 252<br></p>
 </div>
 </div>
 </div>
 </div>
 <div id="footer">
 <div id="footer-text">
-Last updated 2016-03-07 16:06:34 CET
+Last updated 2016-03-14 11:30:08 CET
 </div>
 </div>
 </body>
