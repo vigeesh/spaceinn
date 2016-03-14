@@ -264,7 +264,7 @@ These keywords are then used by the next module without the need for specifying 
 
 === 1. Reading the file
 
-Say we have the file
+If we have the file from the FLD,
 
 ----
 /SUMS/SUM2/D76331/S00000/freq_lmg.h5
