@@ -33,6 +33,7 @@ large amount of data (Glogowski, 2011). Preliminary results for meridional flow
 obtained from this work are comparable to the results obtained using ring- diagram 
 analysis.
 
+image::hankel_anim.gif[Hankel functions]
 
 This document provides a description of the
 Fourier-Hankel/Legendre module on the SDO/HMI JSOC data-analysis pipeline for 
