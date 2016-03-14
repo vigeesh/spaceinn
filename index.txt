@@ -22,7 +22,13 @@ This is done by decomposing the wave field into radially inward and outward
 propagating waves on an annular region centered in the sunspot. Although, Hankel 
 functions are good approximations, later studies also explored this method with 
 the help of associated Legendre functions to account for the curvature of the 
-solar surface. The application of Fourier-Hankel/Legendre technique was later 
+solar surface. 
+
+[[img-hankel]] 
+.Hankel functions of the first and the second kind are used to describe the inward and outward propagating wave field. 
+image::hankel_anim.gif[Hankel functions] 
+
+The application of Fourier-Hankel/Legendre technique was later 
 extended to other helioseismic studies. Braun & Fan (1998) carried out meridional 
 flow measurements using this technique by decomposing the wavefield into equatorward 
 and poleward wavefields and measuring the frequency shifts between them.
@@ -33,11 +39,10 @@ large amount of data (Glogowski, 2011). Preliminary results for meridional flow
 obtained from this work are comparable to the results obtained using ring- diagram 
 analysis.
 
-image::hankel_anim.gif[Hankel functions]
+[[img-legendre]] 
+.Combinations of associated Legendre functions of the first and second kinds are used to describe the poleward and equatorward propagating wave field. . 
+image::legendre_anim.gif[Hankel functions] 
 
-[[img-hankel]] 
-.Del
-image::hankel_anim.gif[Hankel functions] 
 
 This document provides a description of the
 Fourier-Hankel/Legendre module on the SDO/HMI JSOC data-analysis pipeline for 
