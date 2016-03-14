@@ -6,7 +6,7 @@ Vigeesh Gangadharan
 
 == Introduction
 
-Of the several techniques currently used in local helioseismology 
+Among the several techniques currently used in local helioseismology 
 (Ring- diagram analysis: Hill (1988); Time-distance analysis: Duvall et al. (1993); Acoustic holography: Lindsey & Braun (1998)), 
 the Fourier-Hankel spectral decomposition was one of the earliest techniques used 
 by helioseismologists to explore the subsurface regions of the Sun. It was first 
@@ -44,8 +44,6 @@ computation of Fourier-Hankel/Legendre transform which can be easily applied to 
 large amount of data (Glogowski, 2011). Preliminary results for meridional flow 
 obtained from this work are comparable to the results obtained using ring- diagram 
 analysis.
-
-
 
 This document provides a description of the
 Fourier-Hankel/Legendre module on the SDO/HMI JSOC data-analysis pipeline for 
