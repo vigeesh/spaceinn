@@ -6,7 +6,7 @@ Vigeesh Gangadharan
 
 == Introduction
 
-Among the several techniques currently used in local helioseismology 
+Among the various techniques currently used in local helioseismology 
 (Ring- diagram analysis: Hill (1988); Time-distance analysis: Duvall et al. (1993); Acoustic holography: Lindsey & Braun (1998)), 
 the Fourier-Hankel spectral decomposition was one of the earliest techniques used 
 by helioseismologists to explore the subsurface regions of the Sun. It was first 
@@ -23,7 +23,7 @@ propagating waves on an annular region centered in the sunspot.
 
 [[img-hankel]] 
 .Hankel functions of the first and the second kind are used to describe the inward and outward propagating wave field. 
-image::hankel_anim.gif[Hankel functions] 
+image::self_hankel_anim.gif[Hankel functions] 
 
 Although, Hankel 
 functions are good approximations, later studies also explored this method with 
@@ -32,7 +32,7 @@ solar surface.
 
 [[img-legendre]] 
 .Combinations of associated Legendre functions of the first and second kinds are used to describe the poleward and equatorward propagating wave field. 
-image::legendre_anim.gif[Hankel functions] 
+image::self_legendre_anim.gif[Hankel functions] 
 
 The application of Fourier-Hankel/Legendre technique was later 
 extended to other helioseismic studies. Braun & Fan (1998) carried out meridional 
