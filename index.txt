@@ -35,6 +35,10 @@ analysis.
 
 image::hankel_anim.gif[Hankel functions]
 
+[[img-sunset]] 
+.A mountain sunset 
+image::hankel_anim.gif[Sunset, 300, 200, link="http://www.flickr.com/photos/javh/5448336655"] 
+
 This document provides a description of the
 Fourier-Hankel/Legendre module on the SDO/HMI JSOC data-analysis pipeline for 
 processing HMI data. 
