@@ -20,19 +20,10 @@ Whereas, the spectra of the modes that have not encountered the sunspot remains
 unaltered. Fourier- Hankel method can be used to separate these two wave fields. 
 This is done by decomposing the wave field into radially inward and outward 
 propagating waves on an annular region centered in the sunspot. 
-
-[[img-hankel]] 
-.Hankel functions of the first and the second kind are used to describe the inward and outward propagating wave field. 
-image::self_hankel_anim.gif[Hankel functions] 
-
 Although, Hankel 
 functions are good approximations, later studies also explored this method with 
 the help of associated Legendre functions to account for the curvature of the 
 solar surface. 
-
-[[img-legendre]] 
-.Combinations of associated Legendre functions of the first and second kinds are used to describe the poleward and equatorward propagating wave field. 
-image::self_legendre_anim.gif[Hankel functions] 
 
 The application of Fourier-Hankel/Legendre technique was later 
 extended to other helioseismic studies. Braun & Fan (1998) carried out meridional 
