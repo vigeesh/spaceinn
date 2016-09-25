@@ -300,6 +300,7 @@ Braun, D. C., Labonte, B. J., & Duvall, Jr., T. L. 1990, ApJ, 354, 372 +
 Doerr, H.-P., Roth, M., Zaatri, A., Krieger, L., & Thompson, M. J. 2010, Astronomische Nachrichten, 331, 911 +
 Glogowski, K. 2011, Diploma Thesis. +
 Krieger, L., Roth, M., & von der Lu ̈he, O. 2007, Astronomische Nachrichten, 328, 252 +
+<<<<<<< HEAD
 
 
 == Acknowledgments
