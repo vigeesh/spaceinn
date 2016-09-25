@@ -259,6 +259,9 @@ plot(alm[0,2,:]['real'])
 
 ----
 
-=== 2. Example
+== Acknowledgments
+
+This work has received funding from the European Community’s Seventh Framework Programme ([FP7/2007- 2013]) under grant agreement n. 312844.
+
 
 
