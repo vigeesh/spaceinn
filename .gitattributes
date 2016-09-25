@@ -1,1 +1,1 @@
-*.m4 linguist-language=C
+source/m4/*.m4 linguist-language=C
