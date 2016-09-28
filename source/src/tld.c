@@ -485,8 +485,8 @@ int DoIt(void)
 			DIE("-----------\n\nToo many processors for too little frames\n\n\n-----------\n");
 
 		/* Check the Map projection */
-		if (strcmp(mapproj,"PlateCarree"))
-			DIE("-----------\n\nRight now, actually works for \"Postel\" but only try with \"PlateCarree\" Projection\n\n\n-----------\n");
+		if (!strcmp(mapproj,"Postel"))
+            DIE("-----------\n\nUse postel_remap to remap to \"PlateCarree\" Projection\n\n\n-----------\n");
 
 		/**
 		 * Initializing the Output record

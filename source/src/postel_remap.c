@@ -164,7 +164,7 @@ ModuleArgs_t module_args[] =
 #define     Rad2Deg    (180.0/M_PI)
 
 
-char *propagate[] = {"CarrRot", "CMLon", "LonHG", "LatHG", "LonCM",
+char *propagate[] = {"CarrRot", "CMLon", "CDELT1","CDELT2","CDELT3","CRPIX1","CRPIX2",
 		"MidTime", "Duration", "LonSpan", "T_START", "T_STOP", "Coverage", "Quality",
 		"MapScale", "Width", "Height"};
 
@@ -682,9 +682,6 @@ int DoIt(void)
     /* Propagate the keys */
     propagate_keys (outRec, inRec, propagate, keyct);
 
-    //check_and_set_key_double (orec, "lMax", l_max);
-    //check_and_set_key_double (orec, "mAbs", m_abs);
-
     drms_sprint_rec_query (source, inRec);
     check_and_set_key_str   (outRec, "MapProj", "PlateCarre");
     check_and_set_key_str   (outRec, "Source", source);
@@ -692,7 +689,9 @@ int DoIt(void)
     check_and_set_key_str   (outRec, "BLD_VERS", jsoc_version);
     check_and_set_key_str   (outRec, "Input", inSer);
     check_and_set_key_time  (outRec, "Created", CURRENT_SYSTEM_TIME);
-
+    //for sunspots
+    check_and_set_key_double(outRec, "LatHG", 0.0);
+    check_and_set_key_double(outRec, "LonHG", 0.0);
 
 	/* Writing the record to the drms */
 	if(drms_segment_write(outSeg,outArray,1))
