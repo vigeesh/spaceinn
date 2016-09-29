@@ -121,7 +121,7 @@
 //#include "fstats.h"
 
 // The name of the module
-char *module_name = "jsoc_postel_stretch";
+char *module_name = "postel_remap";
 char *module_desc = "Stretch Postel maps for FLD";
 char *version_id = "0.1";
 
@@ -152,6 +152,7 @@ ModuleArgs_t module_args[] =
 		{ARG_INT, "outseg", "0", "Output segment number"},
 		{ARG_FLOAT, "rhow", "0", "Height/Radial of the map section in degrees"},
 		{ARG_FLOAT, "phiw", "360", "Width/Azimuthal of the map section in degrees"},
+        {ARG_FLOAT, "rhoshift", "0", "Degrees to shift from center along Height/Radial"},
 		{ARG_INT, "rows", "1024", "Number of pixels in radial"},
 		{ARG_INT, "cols", "1024", "Number of pixels in azhimuthal"},
 		{ARG_STRING, "requestid", "NA", "RequestID if called as an export processing step."},
@@ -164,9 +165,9 @@ ModuleArgs_t module_args[] =
 #define     Rad2Deg    (180.0/M_PI)
 
 
-char *propagate[] = {"CarrRot", "CMLon", "CDELT1","CDELT2","CDELT3","CRPIX1","CRPIX2",
+char *propagate[] = {"CarrRot", "LonCM", "CDELT1","CDELT2","CDELT3","CRPIX1","CRPIX2",
 		"MidTime", "Duration", "LonSpan", "T_START", "T_STOP", "Coverage", "Quality",
-		"MapScale", "Width", "Height"};
+		"MapScale"};
 
 
 
@@ -235,8 +236,8 @@ int DoIt(void)
 	int irec, nrecs;
 	int img_cnt;
 	int quality=0;
-	int azhpixsiz=200;//roi_wpix; //roi_width/maplonstp;
-	int rhopixsiz=200;//roi_hpix; //roi_height/maplatstp;
+	int azhpixsiz;//roi_wpix; //roi_width/maplonstp;
+	int rhopixsiz;//roi_hpix; //roi_height/maplatstp;
 	int map_cnt;
 	int ijk;		// index
 	int ni,iframe;	// indices
@@ -251,8 +252,6 @@ int DoIt(void)
 	float *inData,*outData; 	// to store the input and output data array
 	float *img_xhp, *img_yhp;
 	float *map_xhp, *map_yhp, *map_dhp;
-	float mapazhstp= 0.125; //roi_width/roi_wpix ; //0.175955;
-	float maprhostp = 0.125; //roi_height/roi_hpix ; //0.175955;
 	float phistep;
 	float rhostep;
 
@@ -283,6 +282,7 @@ int DoIt(void)
 	int as_is = params_get_int(&cmdparams, "u");
 	float roi_rhow = params_get_float(&cmdparams,"rhow");		/*radial from 0 to rho_max degrees*/
 	float roi_phiw = params_get_float(&cmdparams,"phiw");		/*phi=0,360 degrees*/
+    float roi_rhoshift = params_get_float(&cmdparams,"rhoshift");
 	int roi_rows = params_get_int(&cmdparams,"rows");
 	int roi_cols = params_get_int(&cmdparams,"cols");
 	int test = params_get_int(&cmdparams, "t");
@@ -464,8 +464,9 @@ int DoIt(void)
 	phistep=roi_phiw/azhpixsiz;
 
 	if (roi_rhow == 0) roi_rhow=extent;
-	rhostep=roi_rhow/rhopixsiz;
+	rhostep=(roi_rhow-roi_rhoshift)/rhopixsiz;
 
+    
 	irec=0;	//assuming that there is only one record
 	inRec = inRS->records[irec];
 
@@ -474,21 +475,21 @@ int DoIt(void)
 	 * This part of the code reds in test data to check if the projections are OKay
 	 */
 
-	im_xaxis=160;
-	im_yaxis=160;
-	im_taxis=2;
+	//im_xaxis=160;
+	//im_yaxis=160;
+	//im_taxis=2;
 
-	nelements=im_xaxis*im_yaxis*im_taxis;
+	//nelements=im_xaxis*im_yaxis*im_taxis;
 
-	readData = (float *) calloc(nelements,sizeof(float));			//for read individual slice
-	char fpname[DRMS_MAXPATHLEN];
+	//readData = (float *) calloc(nelements,sizeof(float));			//for read individual slice
+	//char fpname[DRMS_MAXPATHLEN];
 	//strcpy(fpname,"/dat/seismo/vigeesh/mapping/Circle.fits");
-	strcpy(fpname,"/dat/seismo/vigeesh/mapping/spot_grid.fits");
+	//strcpy(fpname,"/dat/seismo/vigeesh/mapping/spot_grid.fits");
 
-	fits_open_file(&fptr,fpname, READONLY, &fstatus);
+	//fits_open_file(&fptr,fpname, READONLY, &fstatus);
 	/* Write the array of integers to the image */
-	fits_read_img(fptr, TFLOAT, 1, nelements, &nullval,readData, &anynul , &fstatus);
-	fits_close_file(fptr, &fstatus);            /* close the file */
+	//fits_read_img(fptr, TFLOAT, 1, nelements, &nullval,readData, &anynul , &fstatus);
+	//fits_close_file(fptr, &fstatus);            /* close the file */
 
 	/*
 	 * End of test data read
@@ -571,7 +572,7 @@ int DoIt(void)
 					//the axis value in proper units
 					//map_rho=0.125*iny*Deg2Rad;				/* Compute the axis for rho */
 					//map_azi=2.0*M_PI/azhpixsiz*inx;			/* Compute the axis for phi */
-					map_rho=rhostep*iny*Deg2Rad;				/* Compute the axis for rho */
+					map_rho=(roi_rhoshift*Deg2Rad) + rhostep*iny*Deg2Rad;				/* Compute the axis for rho */
 					map_azi=phistep*inx*Deg2Rad;			/* Compute the axis for phi */
 
 					//this contains the computed value of the img pixels
@@ -662,17 +663,8 @@ int DoIt(void)
 			} // j-loop
             
             //progress-bar
-            int barwidth=70;
-            //printf("%d, %d, %f",iframe,nframes, (float) iframe/(float)nframes);
-            printf("%3d%% [", (int)((float)iframe/(float)nframes * 100) );
-            for (int ip=0; ip < (int)(float)iframe/(float)barwidth; ip++)
-                printf("=");
-            for (int ip=(int)(float)iframe/(float)barwidth; ip<barwidth; ip++)
-                printf(" ");
-            //printf("]\n\033[F\033[J");
-            printf("]\r");
+            printf("Processing: %3d%%\r", (int)((float)iframe/(float)nframes * 100) );
             fflush(stdout);
-            //DIE("GG");
 		}	// iframe-loop
 	}
 
@@ -705,6 +697,10 @@ int DoIt(void)
     //for sunspots
     check_and_set_key_double(outRec, "LatHG", 0.0);
     check_and_set_key_double(outRec, "LonHG", 0.0);
+    check_and_set_key_double(outRec, "CDELT1", rhostep);
+    check_and_set_key_double(outRec, "CDELT2", phistep);
+    check_and_set_key_double(outRec, "Width", roi_phiw);
+    check_and_set_key_double(outRec, "Height", roi_rhow);
 
 	/* Writing the record to the drms */
 	if(drms_segment_write(outSeg,outArray,1))
