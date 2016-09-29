@@ -660,6 +660,19 @@ int DoIt(void)
 					}
 				} // i-loop
 			} // j-loop
+            
+            //progress-bar
+            int barwidth=70;
+            //printf("%d, %d, %f",iframe,nframes, (float) iframe/(float)nframes);
+            printf("%3d%% [", (int)((float)iframe/(float)nframes * 100) );
+            for (int ip=0; ip < (int)(float)iframe/(float)barwidth; ip++)
+                printf("=");
+            for (int ip=(int)(float)iframe/(float)barwidth; ip<barwidth; ip++)
+                printf(" ");
+            //printf("]\n\033[F\033[J");
+            printf("]\r");
+            fflush(stdout);
+            //DIE("GG");
 		}	// iframe-loop
 	}
 
