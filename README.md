@@ -1,5 +1,6 @@
 # SpaceInn
 Fourier-Legendre Pipeline for SDO/HMI
+[![DOI](https://zenodo.org/badge/DOI/10.5281/zenodo.2601960.svg)](https://doi.org/10.5281/zenodo.2601960)
 
 http://vigeesh.github.io/spaceinn/
 
