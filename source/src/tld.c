@@ -58,6 +58,7 @@
  *
  *  Revision history
  *     2014: VG - Adapted HPs code for drms 
+ *     2016: VG - Can read simulation data
  */
 
 
@@ -128,11 +129,11 @@
 #include "backend.h"
 
 #define HFILE "lmg.h5"					/*TODO: VG- Remove Hardcoded*/
-
+char *fitsword = ".fits";
 
 // The name of the module
 char *module_name = "fld";
-char *module_desc = "HMI Dopplergrams to FLD Coefficients";
+char *module_desc = "HMI Dopplergrams/Simulation data to FLD Coefficients";
 char *version_id = "0.1";
 
 /*  global declaration of missing to be initialized as NaN  */
@@ -161,20 +162,16 @@ float missing_val=0.0 / 0.0;;
 
 ModuleArgs_t module_args[] =
 {
-		{ARG_STRING, "in", "NOT SPECIFIED",  "Input data series."},
-		{ARG_STRING, "out", "NOT SPECIFIED",  "Output data series."},
+		{ARG_STRING, "in", "NOT SPECIFIED",  "Input data series/data file."},
+		{ARG_STRING, "out", "NOT SPECIFIED",  "Output data series/data file."},
 		{ARG_STRING,	"segment", "Not Specified",
 				"input data series segment; ignored if series only has one 3-d segment"},
 		{ARG_FLAG, "u", "0", "do not rotate by 180 if needed."},
 		{ARG_FLAG, "t", "0", "testing only, no files written"},
 		{ARG_INT, "inseg", "0", "Input segment number"},
 		{ARG_INT, "outseg", "0", "Output segment number"},
-		{ARG_FLOAT, "width", "0", "Width of the map section in degrees"},
-		{ARG_FLOAT, "height", "0", "Height of the map section in degrees"},
-		{ARG_INT, "wpix", "0", "Width of the map section in degrees"},
-		{ARG_INT, "hpix", "0", "Height of the map section in degrees"},
-		{ARG_FLOAT, "clat", "0", "Latitude of the center"},
-		{ARG_FLOAT, "clon", "0", "Longitude of the center"},
+		{ARG_FLOAT, "LatHG", "0", "Latitude of the center"},
+		{ARG_FLOAT, "LonHG", "0", "Longitude of the center"},
 		{ARG_STRING, "decomp", "FLD", "Decomposition method: SHD, FHD, FLD"},
 		{ARG_STRING, "apodf", "Tukey", "Apodization function: Tukey"},
 		{ARG_INT, "apodw", "8", "Apodization width"},
@@ -184,6 +181,18 @@ ModuleArgs_t module_args[] =
 		{ARG_INT, "l_max", "180", "Maximum l range needed"},
 		{ARG_INT, "interp", "2", "Map Interpolation: 1-Nearest, 2-Bilinear, 3-Cubic-Conv, 4-AST"},
 		{ARG_STRING, "copy",  "+", "comma separated list of keys to propagate forward"},
+		// Arguments for the case of fits file from a simulation/observation
+		{ARG_FLOAT, "width", "0", "Width of the map section in degrees"},
+		{ARG_FLOAT, "height", "0", "Height of the map section in degrees"},
+		{ARG_INT, "wpix", "0", "Width of the map section in pixels"},
+		{ARG_INT, "hpix", "0", "Height of the map section in pixels"},
+		{ARG_FLOAT, "dtheta", "0", "delta theta"},
+		{ARG_FLOAT, "dphi", "0", "delta phi"},
+		{ARG_INT, "x0", "0", "central pix 0"},
+		{ARG_INT, "y0", "0", "central pix 1"},
+		{ARG_STRING, "mapproj",  "PlateCarree", "Mapprojection"},
+		{ARG_FLOAT, "duration","0","Total duration (sec)"},
+		{ARG_FLOAT, "cadence","0","Cadence (sec)"},
 		{ARG_END}
 };
 
@@ -281,6 +290,7 @@ int DoIt(void)
 	const int interp = params_get_int(&cmdparams,"interp");
 
 
+
 	//enum DecompMode decomp;
 
 	char *osegname;
@@ -305,6 +315,10 @@ int DoIt(void)
 	float maplatstp;
 	float maplonstp;
 	float roi_lon,roi_lat,roi_width,roi_height;
+
+
+
+
 
 	double x0,y0;
 	double dval;
@@ -392,208 +406,258 @@ int DoIt(void)
 
 	if (myrank ==0)
 	{
-		/**
-		 * Initializing the Input record
+		/*
+		 * Input record or fits file
 		 *
 		 */
+		if(strstr(inQuery, fitsword) != NULL) {
+			// OMG its a FITS File
+			fprintf (stderr, "The input file name is:  %s\n", inQuery);
+			//Input arguments related to the fits input file
+//			roi_width = params_get_float(&cmdparams,"width");
+//			roi_height = params_get_float(&cmdparams,"height");
+			roi_width = 120.;
+			roi_height = 60;
+			maplatstp = 0.3515625 ;
+			maplonstp = 0.3515625 ;
+			roi_lon = 0.;
+			roi_lat = -35.;
+			duration = 61440.;
+			cadence = 60.;
+			//x0 = 128;
+			//y0 = 256;
 
-		/* Get the record from the input query string */
-		inRS = drms_open_records (drms_env, inQuery, &status);
-		if (status) {
-			fprintf (stderr, "Error (%s): drms_open_records() returned %d for dataset:\n",
-					module_ident, status);
-			fprintf (stderr, "  %s\n", inQuery);
-		}
+//			const int wpix = params_get_int(&cmdparams,"wpix");
+//			const int hpix = params_get_int(&cmdparams,"hpix");
+//			const float maplatstp = params_get_float(&cmdparams,"dtheta");
+//			const float maplonstp = params_get_float(&cmdparams,"dphi");
+//			const int x0 = params_get_int(&cmdparams,"x0");
+//			const int y0 = params_get_int(&cmdparams,"y0");
+//			const float duration = params_get_float(&cmdparams,"duration");
+//			const float cadence = params_get_float(&cmdparams,"cadence");
+//			const float roi_lon=params_get_float(&cmdparams, "LonHG");
+//			const float roi_lat=params_get_float(&cmdparams, "LatHG");
 
-		/* Check how many records are there in the input series */
-		nrecs = inRS->n;
-		if (nrecs < 1) {
-			fprintf (stderr, "No records found in input data set %s\n", inQuery);
-		}
+			nframes = (int) duration/cadence;
+			strcpy(&fpname,inQuery);
 
-		/* Select the record */
-		/* and read the number of data segments in the selected record */
-		inRec = inRS->records[0];
-		inser = strdup (inQuery);
-		if ((segs = drms_record_numsegments (inRec)) < 1) {
-			fprintf (stderr, "Error: no data segments in input data series:\n");
-			fprintf (stderr, "  %s\n", inser);
-		}
 
-		found = 0;
-		/* Select the segment with the data, i.e that contains 3D array */
-		/* the series has two data segments 'Log' and 'V' */
-		for (int n = 0; n < segs; n++) {
-			inSeg = drms_segment_lookupnum (inRec, n);
-			if (inSeg->info->naxis != 3) continue;
-			if (!found) isegnum = n;
-			found++;
-		}
-		/* Error if there were no 3d array (rank=3 data segment) */
-		if (!found) {
-			fprintf (stderr, "Error: no segment of rank 3 in input data series:\n");
-			fprintf (stderr, "  %s\n", inser);
-		}
-		/* If an array of rank=3 is found, and there are more than one rank 3 array,
-		 * please specify the name of the segment to be used */
-		if (found > 1) {
-			if (strcmp (seg_name, "Not Specified")) {
-				inSeg = drms_segment_lookup (inRec, seg_name);
-				if (!inSeg) {
-					fprintf (stderr,
-							"Warning: requested segment %s not found in input data series:\n",
-							seg_name);
-					fprintf (stderr, "  %s\n", inser);
-					inSeg = drms_segment_lookupnum (inRec, isegnum);
-					fprintf (stderr, "  using segement %s\n", inSeg->info->name);
-				} else if (inSeg->info->naxis != 3) {
-					fprintf (stderr,
-							"Warning: requested segment %s in input data series:\n", seg_name);
-					fprintf (stderr, "  %s is not 3-dimensional", inser);
-					inSeg = drms_segment_lookupnum (inRec, isegnum);
-					fprintf (stderr, " using segment %s\n", inSeg->info->name);
-				} else isegnum = inSeg->info->segnum;
-			} else {
-				fprintf (stderr,
-						"Warning: multiple segments of rank 3 in input data series:\n");
-				fprintf (stderr, "  %s\n", inser);
-				fprintf (stderr, "  using %s\n", inSeg->info->name);
+			/* Check the number of frames and number of processors assigned */
+			if (numprocs >= nframes)
+				DIE("-----------\n\nToo many processors for too little frames\n\n\n-----------\n");
+
+			/* Check the Map projection */
+//			if (!strcmp(mapproj,"Postel"))
+//	            DIE("-----------\n\nUse postel_remap to remap to \"PlateCarree\" Projection\n\n\n-----------\n");
+
+		} else {
+			// DRMS record
+			/**
+			 * Initializing the Input record
+			 *
+			 */
+
+			/* Get the record from the input query string */
+			inRS = drms_open_records (drms_env, inQuery, &status);
+			if (status) {
+				fprintf (stderr, "Error (%s): drms_open_records() returned %d for dataset:\n",
+						module_ident, status);
+				fprintf (stderr, "  %s\n", inQuery);
 			}
+
+			/* Check how many records are there in the input series */
+			nrecs = inRS->n;
+			if (nrecs < 1) {
+				fprintf (stderr, "No records found in input data set %s\n", inQuery);
+			}
+
+			/* Select the record */
+			/* and read the number of data segments in the selected record */
+			inRec = inRS->records[0];
+			inser = strdup (inQuery);
+			if ((segs = drms_record_numsegments (inRec)) < 1) {
+				fprintf (stderr, "Error: no data segments in input data series:\n");
+				fprintf (stderr, "  %s\n", inser);
+			}
+
+			found = 0;
+			/* Select the segment with the data, i.e that contains 3D array */
+			/* the series has two data segments 'Log' and 'V' */
+			for (int n = 0; n < segs; n++) {
+				inSeg = drms_segment_lookupnum (inRec, n);
+				if (inSeg->info->naxis != 3) continue;
+				if (!found) isegnum = n;
+				found++;
+			}
+			/* Error if there were no 3d array (rank=3 data segment) */
+			if (!found) {
+				fprintf (stderr, "Error: no segment of rank 3 in input data series:\n");
+				fprintf (stderr, "  %s\n", inser);
+			}
+			/* If an array of rank=3 is found, and there are more than one rank 3 array,
+			 * please specify the name of the segment to be used */
+			if (found > 1) {
+				if (strcmp (seg_name, "Not Specified")) {
+					inSeg = drms_segment_lookup (inRec, seg_name);
+					if (!inSeg) {
+						fprintf (stderr,
+								"Warning: requested segment %s not found in input data series:\n",
+								seg_name);
+						fprintf (stderr, "  %s\n", inser);
+						inSeg = drms_segment_lookupnum (inRec, isegnum);
+						fprintf (stderr, "  using segement %s\n", inSeg->info->name);
+					} else if (inSeg->info->naxis != 3) {
+						fprintf (stderr,
+								"Warning: requested segment %s in input data series:\n", seg_name);
+						fprintf (stderr, "  %s is not 3-dimensional", inser);
+						inSeg = drms_segment_lookupnum (inRec, isegnum);
+						fprintf (stderr, " using segment %s\n", inSeg->info->name);
+					} else isegnum = inSeg->info->segnum;
+				} else {
+					fprintf (stderr,
+							"Warning: multiple segments of rank 3 in input data series:\n");
+					fprintf (stderr, "  %s\n", inser);
+					fprintf (stderr, "  using %s\n", inSeg->info->name);
+				}
+			}
+
+
+			/* Get the relevant keyword values from the input record*/
+			roi_lon=drms_getkey_float(inRec, "LonHG",&status);
+			roi_lat=drms_getkey_float(inRec, "LatHG",&status);
+			roi_width=drms_getkey_float(inRec, "Width",&status);
+			roi_height=drms_getkey_float(inRec, "Height",&status);
+			maplatstp=drms_getkey_double(inRec, "CDELT1",&status);
+			maplonstp=drms_getkey_double(inRec, "CDELT2",&status);
+			x0=drms_getkey_double(inRec, "CRPIX1",&status);
+			y0=drms_getkey_double(inRec, "CRPIX2",&status);
+			t_start=drms_getkey_time(inRec, "T_START",&status);
+			t_end =drms_getkey_time(inRec, "T_STOP",&status);
+			mapproj=drms_getkey_string(inRec,"MapProj",&status);
+			/* To get the input number of records */
+			duration = drms_getkey_float(inRec, "Duration",&status);
+			cadence = drms_getkey_double(inRec, "CDELT3",&status);
+			nframes = (int) duration/cadence;
+
+
+			/* Check the number of frames and number of processors assigned */
+			if (numprocs >= nframes)
+				DIE("-----------\n\nToo many processors for too little frames\n\n\n-----------\n");
+
+			/* Check the Map projection */
+			if (!strcmp(mapproj,"Postel"))
+	            DIE("-----------\n\nUse postel_remap to remap to \"PlateCarree\" Projection\n\n\n-----------\n");
+
+
+			/* To get the segment name with rank 3 i.e "V" in our case */
+
+
+			for (int n = 0; n < segs; n++) {
+				inSeg = drms_segment_lookupnum (inRec, n);
+				if (inSeg->info->naxis != 3) continue;
+				drms_record_directory(inRec, &fpname, 1);
+				//strcpy(&fpname,&fname);
+				strcat(&fpname,"/");
+				strcat(&fpname,inSeg->info->name);
+				strcat(&fpname,".fits");
+				//printf("rank=%d, filename=%s\n",myrank,&fpname);
+			}
+
+
+
 		}
-
-
-		/* Get the relevant keyword values from the input record*/
-		roi_lon=drms_getkey_float(inRec, "LonHG",&status);
-		roi_lat=drms_getkey_float(inRec, "LatHG",&status);
-		roi_width=drms_getkey_float(inRec, "Width",&status);
-		roi_height=drms_getkey_float(inRec, "Height",&status);
-		maplatstp=drms_getkey_double(inRec, "CDELT1",&status);
-		maplonstp=drms_getkey_double(inRec, "CDELT2",&status);
-		x0=drms_getkey_double(inRec, "CRPIX1",&status);
-		y0=drms_getkey_double(inRec, "CRPIX2",&status);
-		t_start=drms_getkey_time(inRec, "T_START",&status);
-		t_end =drms_getkey_time(inRec, "T_STOP",&status);
-		mapproj=drms_getkey_string(inRec,"MapProj",&status);
-		/* To get the input number of records */
-		duration = drms_getkey_float(inRec, "Duration",&status);
-		cadence = drms_getkey_double(inRec, "CDELT3",&status);
-		nframes = (int) duration/cadence;
 
 		
-		/* Check the number of frames and number of processors assigned */
-		if (numprocs >= nframes)
-			DIE("-----------\n\nToo many processors for too little frames\n\n\n-----------\n");
 
-		/* Check the Map projection */
-		if (!strcmp(mapproj,"Postel"))
-            DIE("-----------\n\nUse postel_remap to remap to \"PlateCarree\" Projection\n\n\n-----------\n");
-
-		/**
-		 * Initializing the Output record
-		 *
-		 */
-		/* Create the record in the DRMS*/
-		if (!(outRS = drms_create_records (drms_env, nrecs, outSeries, DRMS_PERMANENT,
-				&status))) {
-			fprintf (stderr, "Error: unable to create %d records in series %s\n",
-					nrecs, outSeries);
-			fprintf (stderr, "       drms_create_records() returned status %d\n", status);
-			return 1;
-		}
-		if (verbose) printf ("creating %d record(s) in series %s\n", nrecs, outSeries);
+		if(strstr(outSeries, "NOT SPECIFIED") != NULL) {
+					// FITS File
+					fprintf (stderr, "The output will be written to:  lmg.h5\n");
+		} else {
 
 
-		if (verbose && dispose == DRMS_FREE_RECORD)
-			printf ("experimental run, output records will not be saved\n");
+			/**
+			 * Initializing the Output record
+			 *
+			 */
+			/* Create the record in the DRMS*/
+			if (!(outRS = drms_create_records (drms_env, nrecs, outSeries, DRMS_PERMANENT,
+					&status))) {
+				fprintf (stderr, "Error: unable to create %d records in series %s\n",
+						nrecs, outSeries);
+				fprintf (stderr, "       drms_create_records() returned status %d\n", status);
+				return 1;
+			}
+			if (verbose) printf ("creating %d record(s) in series %s\n", nrecs, outSeries);
 
-		/*  Check output data series structure  */
-		outRec = drms_recordset_getrec (outRS, 0);
-		if (!outRec) {
-			fprintf (stderr, "Error accessing record %d in series %s\n", 0, outSeries);
-			drms_close_records (outRS, DRMS_FREE_RECORD);
-			return 1;
-		}
 
-		/*Check how many data segments are there */
-		segct = drms_record_numsegments (outRec);
-		found = 0;
-		for (int n = 0; n < segct; n++) {
-			outSeg = drms_segment_lookupnum (outRec, n);
-			if (!found) osegname = strdup (outSeg->info->name);
-			found++;
-		}
+			if (verbose && dispose == DRMS_FREE_RECORD)
+				printf ("experimental run, output records will not be saved\n");
 
-		if (found < 1) {
-			fprintf (stderr,
-					"Error: no data segment of dimension 3 and appropriate size in output series %s\n", outSeries);
-			drms_close_records (outRS, DRMS_FREE_RECORD);
-			return 1;
-		}
-		outSeg = drms_segment_lookup (outRec, osegname);
-		if (found > 1) {
-			fprintf (stderr,
-					"Warning: multiple data segments of dimension 3 and appropriate size in output series %s\n", outSeries);
-			fprintf (stderr, "       using \"%s\"\n", osegname);
-		}
+			/*  Check output data series structure  */
+			outRec = drms_recordset_getrec (outRS, 0);
+			if (!outRec) {
+				fprintf (stderr, "Error accessing record %d in series %s\n", 0, outSeries);
+				drms_close_records (outRS, DRMS_FREE_RECORD);
+				return 1;
+			}
 
-		logSeg = drms_segment_lookup (outRec, "Log");
-		if (logSeg) drms_segment_filename (logSeg, logfilename);
-		else if (verbose) {
-			fprintf (stderr,
-					"Warning: segment \"Log\" not present in output series %s\n", outSeries);
-			fprintf (stderr, "         verbose logging turned off\n");
-			verbose_logs = 0;
-		}
+			/*Check how many data segments are there */
+			segct = drms_record_numsegments (outRec);
+			found = 0;
+			for (int n = 0; n < segct; n++) {
+				outSeg = drms_segment_lookupnum (outRec, n);
+				if (!found) osegname = strdup (outSeg->info->name);
+				found++;
+			}
 
-		if (verbose_logs) {
+			if (found < 1) {
+				fprintf (stderr,
+						"Error: no data segment of dimension 3 and appropriate size in output series %s\n", outSeries);
+				drms_close_records (outRS, DRMS_FREE_RECORD);
+				return 1;
+			}
+			outSeg = drms_segment_lookup (outRec, osegname);
+			if (found > 1) {
+				fprintf (stderr,
+						"Warning: multiple data segments of dimension 3 and appropriate size in output series %s\n", outSeries);
+				fprintf (stderr, "       using \"%s\"\n", osegname);
+			}
+
 			logSeg = drms_segment_lookup (outRec, "Log");
 			if (logSeg) drms_segment_filename (logSeg, logfilename);
+			else if (verbose) {
+				fprintf (stderr,
+						"Warning: segment \"Log\" not present in output series %s\n", outSeries);
+				fprintf (stderr, "         verbose logging turned off\n");
+				verbose_logs = 0;
+			}
+
+			if (verbose_logs) {
+				logSeg = drms_segment_lookup (outRec, "Log");
+				if (logSeg) drms_segment_filename (logSeg, logfilename);
+			}
+
 		}
 
-		/* To get the segment name with rank 3 i.e "V" in our case */
-
-		
-		for (int n = 0; n < segs; n++) {
-			inSeg = drms_segment_lookupnum (inRec, n);
-			if (inSeg->info->naxis != 3) continue;
-			drms_record_directory(inRec, &fpname, 1);
-			//strcpy(&fpname,&fname);
-			strcat(&fpname,"/");
-			strcat(&fpname,inSeg->info->name);
-			strcat(&fpname,".fits");
-			//printf("rank=%d, filename=%s\n",myrank,&fpname);
-		}
-
-		//printf("rank=%d, filename=%s\n",myrank,&fpname);
-		//The HDF file is
-		//strcpy(&hdfname,osegname);
-		//strcat(&hdfname,".h5");
-		//strcpy(mpi_send.hdfname,&hdfname);
+		// The HDF file is
 		strcpy(&hdfname,osegname);
-              	strcat(&hdfname,".h5");
+		strcat(&hdfname,".h5");
                        
 		strcpy(&mpi_send.hdfname,hdfname);
 		mpi_send.roi_lat=roi_lat;
-                mpi_send.roi_lon=roi_lon;
-                mpi_send.roi_width=roi_width;
-                mpi_send.roi_height=roi_height;
-                mpi_send.maplatstp=maplatstp;
-                mpi_send.maplonstp=maplonstp;
-                //mpi_send.l_max=l_max;
-                //mpi_send.m_abs=m_abs;
-                mpi_send.cadence=cadence;
-                mpi_send.nframes=nframes;
-                //mpi_send.apod_width=apod_width;
-                //mpi_send.apod_margin=apod_margin;
-                //mpi_send.lowpass_fwhm=lowpass_fwhm;
-                //strcpy(mpi_send.apod_func,&apod_func);
-               	strcpy(&mpi_send.fpname,fpname);
-                  //      printf("Before: rank=%d, filename=%s\n",myrank,&fpname);
-                        //MPI_Bcast(&mpi_send, 1, mpi_send_type, 0, MPI_COMM_WORLD);
-                        //printf("After: rank=%d, filename=%s\n",myrank,mpi_send.hdfname);
-
-
+		mpi_send.roi_lon=roi_lon;
+		mpi_send.roi_width=roi_width;
+		mpi_send.roi_height=roi_height;
+		mpi_send.maplatstp=maplatstp;
+		mpi_send.maplonstp=maplonstp;
+		mpi_send.cadence=cadence;
+		mpi_send.nframes=nframes;
+		strcpy(&mpi_send.fpname,fpname);
+		//printf("Before: rank=%d, filename=%s\n",myrank,&fpname);
+		//MPI_Bcast(&mpi_send, 1, mpi_send_type, 0, MPI_COMM_WORLD);
+		//printf("After: rank=%d, filename=%s\n",myrank,mpi_send.hdfname);
 	}
+
 	MPI_Barrier(MPI_COMM_WORLD);
 	fflush(stdout);
 	//printf("Before: rank=%d, filename=%s,%s\n",myrank,&mpi_send.hdfname,&mpi_send.fpname);	
@@ -604,23 +668,23 @@ int DoIt(void)
 	//printf("After: rank=%d, filename=%s,%f,%d,%s\n",myrank,&mpi_send.hdfname,mpi_send.roi_lat,mpi_send.l_max,&mpi_send.fpname);
 
 	strcpy(hdfname,mpi_send.hdfname);
-        roi_lat=mpi_send.roi_lat;
-        roi_lon=mpi_send.roi_lon;
-       	roi_width=mpi_send.roi_width;
-        roi_height=mpi_send.roi_height;
-        maplatstp=mpi_send.maplatstp;
-        maplonstp=mpi_send.maplonstp;
-        //l_max=&mpi_send.l_max;
-        //m_abs=&mpi_send.m_abs;
-        cadence=mpi_send.cadence;
-        nframes=mpi_send.nframes;
-        //apod_width=&mpi_send.apod_width;
-        //apod_margin=&mpi_send.apod_margin;
-        //lowpass_fwhm=&mpi_send.lowpass_fwhm;
-        //strcpy(apod_func,mpi_send.apod_func);
-        strcpy(fpname,mpi_send.fpname);
+	roi_lat=mpi_send.roi_lat;
+	roi_lon=mpi_send.roi_lon;
+	roi_width=mpi_send.roi_width;
+	roi_height=mpi_send.roi_height;
+	maplatstp=mpi_send.maplatstp;
+	maplonstp=mpi_send.maplonstp;
+	//l_max=&mpi_send.l_max;
+	//m_abs=&mpi_send.m_abs;
+	cadence=mpi_send.cadence;
+	nframes=mpi_send.nframes;
+	//apod_width=&mpi_send.apod_width;
+	//apod_margin=&mpi_send.apod_margin;
+	//lowpass_fwhm=&mpi_send.lowpass_fwhm;
+	//strcpy(apod_func,mpi_send.apod_func);
+	strcpy(fpname,mpi_send.fpname);
 	MPI_Barrier(MPI_COMM_WORLD);
-        fflush(stdout);
+	fflush(stdout);
 	//printf("After: rank=%d, filename=%s,%f,%d,%s\n",myrank,&mpi_send.hdfname,roi_lat,l_max,&mpi_send.fpname);
 	//printf("After: rank=%d, filename=%s,%f,%d,%s\n",myrank,&hdfname,roi_lat,l_max,&fpname);
 
@@ -698,6 +762,10 @@ int DoIt(void)
 		job->data_scale_factor=1;							//TODO: Remove this hardcoded stuff
 		job->roi_npix_phi = (int) (job->roi_width / job->mapscale_phi);
 		job->roi_npix_theta = (int) (job->roi_height / job->mapscale_theta);
+		printf("npix theta - %i",job->roi_npix_theta);
+		printf("npix phi - %i",job->roi_npix_phi);
+
+
 		//job->roi_width = job->roi_npix_phi * job->mapscale_phi;
 		//job->roi_height = job->roi_npix_theta * job->mapscale_theta;
 		job->do_demean = FALSE;								//TODO: Remove this hardcoded stuff
@@ -835,108 +903,125 @@ int DoIt(void)
 	if (myrank ==0)
 	{
 
-	    hid_t dataspace_id,file_id,grp, attribute_id;
 
-		/* Writing the Attribute for the HDF5 file */
-	    file_id = H5Fopen(HFILE, H5F_ACC_RDWR, H5P_DEFAULT);
+	    // Only if the InSeries and OutSeries are specified.
 
-	    //open the group in the file
-	    grp  = H5Gopen2(file_id, "/lmg", H5P_DEFAULT);
 
-	    long nrank = 1;
-	    long ndims[1] = {1};
-	    dataspace_id = H5Screate_simple(nrank, ndims, NULL);
-	    float	attr_flt[1];
-	    double	attr_dbl[1];
-	    int		attr_int[1];
-	    //char	attr_char[1];
-	    double result;
+	    if(!strstr(outSeries, "NOT SPECIFIED") != NULL) {
+	    					// FITS File
+	    	if(!strstr(inQuery, fitsword) != NULL) {
 
-	    for (int n = 0; n < keyct; n++)
-	    {
-	    	if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_FLOAT)
-	    	{
-	    		dval = drms_getkey_float (inRec, propagate[n], &status);
-	    		attr_flt[0]=dval;
-	    		attribute_id = H5Acreate(grp, propagate[n], H5T_IEEE_F32BE, dataspace_id,
-	    				H5P_DEFAULT, H5P_DEFAULT);
-	    		status=H5Awrite(attribute_id,H5T_NATIVE_FLOAT,attr_flt);
-	    		status=H5Aclose(attribute_id);
+	    		propagate_keys (outRec, inRec, propagate, keyct);
+	    		drms_sprint_rec_query (source, inRec);
+	    		inser = strdup (inQuery);
+
+
+			hid_t dataspace_id,file_id,grp, attribute_id;
+
+			/* Writing the Attribute for the HDF5 file */
+			file_id = H5Fopen(HFILE, H5F_ACC_RDWR, H5P_DEFAULT);
+
+			//open the group in the file
+			grp  = H5Gopen2(file_id, "/lmg", H5P_DEFAULT);
+
+			long nrank = 1;
+			long ndims[1] = {1};
+			dataspace_id = H5Screate_simple(nrank, ndims, NULL);
+			float	attr_flt[1];
+			double	attr_dbl[1];
+			int		attr_int[1];
+			//char	attr_char[1];
+			double result;
+
+			for (int n = 0; n < keyct; n++)
+			{
+				if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_FLOAT)
+				{
+					dval = drms_getkey_float (inRec, propagate[n], &status);
+					attr_flt[0]=dval;
+					attribute_id = H5Acreate(grp, propagate[n], H5T_IEEE_F32BE, dataspace_id,
+							H5P_DEFAULT, H5P_DEFAULT);
+					status=H5Awrite(attribute_id,H5T_NATIVE_FLOAT,attr_flt);
+					status=H5Aclose(attribute_id);
+				}
+				if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_DOUBLE)
+				{
+					dval = drms_getkey_double (inRec, propagate[n], &status);
+					attr_dbl[0]=dval;
+					attribute_id = H5Acreate(grp, propagate[n], H5T_IEEE_F64LE, dataspace_id,
+							H5P_DEFAULT, H5P_DEFAULT);
+					status=H5Awrite(attribute_id,H5T_NATIVE_DOUBLE,attr_dbl);
+					status=H5Aclose(attribute_id);
+				}
+				if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_INT)
+				{
+					dval = drms_getkey_int (inRec, propagate[n], &status);
+					attr_int[0]=dval;
+					attribute_id = H5Acreate(grp, propagate[n], H5T_STD_I32BE, dataspace_id,
+									H5P_DEFAULT, H5P_DEFAULT);
+					status=H5Awrite(attribute_id,H5T_NATIVE_INT,attr_int);
+					status=H5Aclose(attribute_id);
+				}
+				if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_TIME)
+				{
+					dval = drms_getkey_time (inRec, propagate[n], &status);
+					result = drms2time(DRMS_TYPE_TIME, &dval, &status);
+					attr_dbl[0]=result;
+					attribute_id = H5Acreate(grp, propagate[n], H5T_IEEE_F64LE, dataspace_id,
+							H5P_DEFAULT, H5P_DEFAULT);
+					status=H5Awrite(attribute_id,H5T_NATIVE_DOUBLE,attr_dbl);
+					status=H5Aclose(attribute_id);
+				}
+				/*
+				if (drms_keyword_type(drms_keyword_lookup(outRec,propagate[n],1))==DRMS_TYPE_STRING)
+				{
+					dval = drms_getkey_string (inRec, propagate[n], &status);
+					attr_char[0]=dval;
+					atype=H5Tcopy(H5T_C_S1);
+					H5Tset_size(atype, 5);
+					H5Tset_strpad(atype,H5T_STR_NULLTERM);
+					attribute_id = H5Acreate(grp, propagate[n], atype, dataspace_id,
+							H5P_DEFAULT, H5P_DEFAULT);
+					status=H5Awrite(attribute_id,H5T_NATIVE_CHAR,attr_char);
+					status=H5Aclose(attribute_id);
+					printf("Testing, no string attribute");
+				}
+				*/
+
+			}
+
+
+			status=H5Sclose(dataspace_id);
+			status=H5Gclose(grp);
+			status=H5Fclose(file_id);
+
+
+
+
+			check_and_set_key_double (outRec, "lMax", l_max);
+			check_and_set_key_double (outRec, "mAbs", m_abs);
+			check_and_set_key_str   (outRec, "Source", source);
+			check_and_set_key_str   (outRec, "Module", module_ident);
+			check_and_set_key_str   (outRec, "BLD_VERS", jsoc_version);
+			check_and_set_key_str   (outRec, "Input", inser);
+			check_and_set_key_time  (outRec, "Created", CURRENT_SYSTEM_TIME);
+
+
+			/* Writing the record to the DRMS */
+			if(drms_segment_write_from_file(outSeg,hdfname))
+				fprintf(stderr, "Cannot write hdf5 file for the segment.\n");
+
+			/* Close the input record */
+			if(drms_close_records(inRS, DRMS_FREE_RECORD))
+				fprintf(stderr, "Error closing Record for input series\n");
+
+			/* Close the output record */
+			if(drms_close_records(outRS, DRMS_INSERT_RECORD))
+				fprintf(stderr, "Error closing Record for output series\n");
+
 	    	}
-	    	if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_DOUBLE)
-	    	{
-	    		dval = drms_getkey_double (inRec, propagate[n], &status);
-	    		attr_dbl[0]=dval;
-	    		attribute_id = H5Acreate(grp, propagate[n], H5T_IEEE_F64LE, dataspace_id,
-	    				H5P_DEFAULT, H5P_DEFAULT);
-	    		status=H5Awrite(attribute_id,H5T_NATIVE_DOUBLE,attr_dbl);
-	    		status=H5Aclose(attribute_id);
-	    	}
-	    	if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_INT)
-	    	{
-	    		dval = drms_getkey_int (inRec, propagate[n], &status);
-	    		attr_int[0]=dval;
-	    		attribute_id = H5Acreate(grp, propagate[n], H5T_STD_I32BE, dataspace_id,
-	    		   				H5P_DEFAULT, H5P_DEFAULT);
-	    		status=H5Awrite(attribute_id,H5T_NATIVE_INT,attr_int);
-	    		status=H5Aclose(attribute_id);
-	    	}
-	    	if (drms_keyword_type(drms_keyword_lookup(inRec,propagate[n],1))==DRMS_TYPE_TIME)
-	    	{
-	    		dval = drms_getkey_time (inRec, propagate[n], &status);
-	    		result = drms2time(DRMS_TYPE_TIME, &dval, &status);
-	    		attr_dbl[0]=result;
-	    		attribute_id = H5Acreate(grp, propagate[n], H5T_IEEE_F64LE, dataspace_id,
-	    				H5P_DEFAULT, H5P_DEFAULT);
-	    		status=H5Awrite(attribute_id,H5T_NATIVE_DOUBLE,attr_dbl);
-	    		status=H5Aclose(attribute_id);
-	    	}
-	    	/*
-	    	if (drms_keyword_type(drms_keyword_lookup(outRec,propagate[n],1))==DRMS_TYPE_STRING)
-	    	{
-	    		dval = drms_getkey_string (inRec, propagate[n], &status);
-	    		attr_char[0]=dval;
-	    		atype=H5Tcopy(H5T_C_S1);
-	            H5Tset_size(atype, 5);
-	            H5Tset_strpad(atype,H5T_STR_NULLTERM);
-	    		attribute_id = H5Acreate(grp, propagate[n], atype, dataspace_id,
-	    				H5P_DEFAULT, H5P_DEFAULT);
-	    		status=H5Awrite(attribute_id,H5T_NATIVE_CHAR,attr_char);
-	    		status=H5Aclose(attribute_id);
-	    		printf("Testing, no string attribute");
-	    	}
-	    	*/
 
 	    }
-
-
-	    status=H5Sclose(dataspace_id);
-	    status=H5Gclose(grp);
-	    status=H5Fclose(file_id);
-
-	    propagate_keys (outRec, inRec, propagate, keyct);
-	    drms_sprint_rec_query (source, inRec);
-		inser = strdup (inQuery);
-	    check_and_set_key_double (outRec, "lMax", l_max);
-	    check_and_set_key_double (outRec, "mAbs", m_abs);
-	    check_and_set_key_str   (outRec, "Source", source);
-	    check_and_set_key_str   (outRec, "Module", module_ident);
-	    check_and_set_key_str   (outRec, "BLD_VERS", jsoc_version);
-	    check_and_set_key_str   (outRec, "Input", inser);
-	    check_and_set_key_time  (outRec, "Created", CURRENT_SYSTEM_TIME);
-
-
-		/* Writing the record to the DRMS */
-		if(drms_segment_write_from_file(outSeg,hdfname))
-			fprintf(stderr, "Cannot write hdf5 file for the segment.\n");
-
-		/* Close the input record */
-		if(drms_close_records(inRS, DRMS_FREE_RECORD))
-			fprintf(stderr, "Error closing Record for input series\n");
-
-		/* Close the output record */
-		if(drms_close_records(outRS, DRMS_INSERT_RECORD))
-			fprintf(stderr, "Error closing Record for output series\n");
 
 	}
 
